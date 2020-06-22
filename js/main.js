@@ -76,7 +76,6 @@ var fillBigPicData = function () {
   bigPicture.querySelector('.likes-count').textContent = firstElem.likes;
   bigPicture.querySelector('.comments-count').textContent = firstElem.comments.length;
   bigPicture.querySelector('.social__caption').textContent = firstElem.description;
-
   var fragmentCmnt = document.createDocumentFragment();
   for (var j = 0; j < firstElem.comments.length; j++) {
     fragmentCmnt.appendChild(renderSocialComments(firstElem.comments[j]));
@@ -86,9 +85,51 @@ var fillBigPicData = function () {
 
 fillBigPicData();
 
+var bigPictureCancel = bigPicture.querySelector('.cancel');
+
+var onOverlayEnterPress = function (evt) {
+  if (evt.key === 'Enter') {
+    evt.preventDefault();
+    openPictureOverlay(evt);
+  }
+};
+
+var onOverlayEscPress = function (evt) {
+  if (evt.key === 'Escape') {
+    evt.preventDefault();
+    closePictureOverlay(evt);
+  }
+};
+
+var openPictureOverlay = function (evt) {
+  var target = evt.target.parentNode;
+  if (evt.type === 'keydown') {
+    target = evt.target;
+  }
+  if (target.className === 'picture') {
+    document.querySelector('body').classList.add('modal-open');
+    bigPicture.classList.remove('hidden');
+    bigPictureCancel.addEventListener('click', closePictureOverlay);
+    document.addEventListener('keydown', onOverlayEscPress);
+
+    bigPicture.querySelector('.big-picture__img > img').srcset = target.querySelector('.picture__img').srcset;
+    bigPicture.querySelector('.likes-count').textContent = target.querySelector('.picture__likes').textContent;
+    bigPicture.querySelector('.comments-count').textContent = target.querySelector('.picture__comments').textContent;
+  }
+};
+
+var closePictureOverlay = function (evt) {
+  evt.preventDefault();
+  bigPicture.classList.add('hidden');
+  bigPictureCancel.removeEventListener('click', closePictureOverlay);
+  document.removeEventListener('keydown', onOverlayEscPress);
+  document.querySelector('body').classList.remove('modal-open');
+};
+userPictureListElem.addEventListener('keydown', onOverlayEnterPress);
+userPictureListElem.addEventListener('click', openPictureOverlay);
+
 document.querySelector('.social__comment-count').classList.add('hidden');
 document.querySelector('.comments-loader').classList.add('hidden');
-document.querySelector('body').classList.add('modal-open');
 
 var uploadFile = document.querySelector('#upload-file');
 var editPicForm = document.querySelector('.img-upload__overlay');
@@ -147,7 +188,7 @@ effectsMap[EFFECTS.HEAT] = function (value) {
 };
 
 var onPopupEscPress = function (evt) {
-  if (evt.key === 'Escape') {
+  if (evt.key === 'Escape' && editPicForm.querySelector('.text__description') !== document.activeElement) {
     evt.preventDefault();
     closePopup();
   }
